@@ -19,9 +19,11 @@
         <logback.version>1.1.2</logback.version>
         <logback.core.version>1.1.2</logback.core.version>
         <audit.model.version>1.0.3</audit.model.version>
-        <exchange.model.version>2.0.8</exchange.model.version>
+        <exchange.model.version>3.0.5-SNAPSHOT</exchange.model.version>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
+		
+		<scm.connection>scm:git:https://github.com/UnionVMS/UVMS-UPLOADER-PLUGIN.git</scm.connection>
     </properties>
 
     <dependencyManagement>
@@ -91,30 +93,51 @@
                 <groupId>eu.europa.ec.fisheries.uvms.exchange</groupId>
                 <artifactId>exchange-model</artifactId>
                 <version>${exchange.model.version}</version>
+				<classifier>date</classifier>
             </dependency>
 
         </dependencies>
     </dependencyManagement>
-
-    <distributionManagement>
+	
+	<distributionManagement>
         <repository>
-            <id>digit-releases</id>
-            <name>DG DIGIT Repository</name>
-            <url>https://webgate.ec.europa.eu/CITnet/nexus/content/repositories/mare/</url>
+            <id>focus-releases</id>
+            <name>UnionVms Repository</name>
+            <url>http://nexus.focus.fish/nexus/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
-            <id>digit-snapshots</id>
-            <name>DG DIGIT Snapshot Repository</name>
-            <url>https://webgate.ec.europa.eu/CITnet/nexus/content/repositories/mare-snapshots/</url>
+            <id>focus-snapshots</id>
+            <name>UnionVms Snapshot Repository</name>
+            <url>http://nexus.focus.fish/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
-	<scm>
-	 <connection>scm:git:https://emkoviand@webgate.ec.europa.eu/CITnet/stash/scm/unionvms/uploader.git</connection>
-	 <developerConnection>scm:git:https://emkoviand@webgate.ec.europa.eu/CITnet/stash/scm/unionvms/uploader.git</developerConnection>
-	 <url>https://emkoviand@webgate.ec.europa.eu/CITnet/stash/scm/unionvms/</url>
-	  <tag>HEAD</tag>
-  </scm>
+    <scm>
+        <connection>${scm.connection}</connection>
+        <tag>HEAD</tag>
+    </scm>
+  
+  	<profiles>
+		<profile>
+            <id>dg-mare</id>
+            <distributionManagement>
+                <repository>
+                    <id>digit-releases</id>
+                    <name>DG DIGIT Repository</name>
+                    <url>https://webgate.ec.europa.eu/CITnet/nexus/content/repositories/mare/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>digit-snapshots</id>
+                    <name>DG DIGIT Snapshot Repository</name>
+                    <url>https://webgate.ec.europa.eu/CITnet/nexus/content/repositories/mare-snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+
+            <properties>
+                <scm.connection>scm:git:https://emkoviand@webgate.ec.europa.eu/CITnet/stash/scm/unionvms/uploader.git</scm.connection>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <pluginManagement>
