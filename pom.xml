@@ -11,7 +11,7 @@
 
     <groupId>eu.europa.ec.fisheries.uvms.plugins</groupId>
     <artifactId>uploader</artifactId>
-    <version>0.5.3</version>
+    <version>0.5.4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>Plugin template</description>
 
@@ -71,7 +71,7 @@
 
     <scm>
         <connection>${scm.connection}</connection>
-        <tag>uploader-0.5.3</tag>
+        <tag>HEAD</tag>
     </scm>
   
   	<profiles>
