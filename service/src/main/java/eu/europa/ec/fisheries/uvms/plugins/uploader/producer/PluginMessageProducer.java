@@ -11,6 +11,7 @@ details. You should have received a copy of the GNU General Public License along
 package eu.europa.ec.fisheries.uvms.plugins.uploader.producer;
 
 import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
+import eu.europa.ec.fisheries.uvms.message.JMSUtils;
 import eu.europa.ec.fisheries.uvms.plugins.uploader.constants.ModuleQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +36,14 @@ public class PluginMessageProducer {
     @Resource(lookup = ExchangeModelConstants.CONNECTION_FACTORY)
     private ConnectionFactory connectionFactory;
 
-    private Connection connection = null;
-    private Session session = null;
-
     private static final Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void sendResponseMessage(String text, TextMessage requestMessage) throws JMSException {
-        try {
-            connectQueue();
+    	Connection connection=null;
+    	try {
+            connection = connectionFactory.createConnection();
+            final Session session = JMSUtils.connectToQueue(connection);
 
             TextMessage message = session.createTextMessage();
             message.setJMSDestination(requestMessage.getJMSReplyTo());
@@ -53,17 +53,19 @@ public class PluginMessageProducer {
             session.createProducer(requestMessage.getJMSReplyTo()).send(message);
 
         } catch (JMSException e) {
-            LOG.error("[ Error when sending jms message. ] {}", e);
+            LOG.error("[ Error when sending jms message. {}] {}",text, e);
             throw new JMSException(e.getMessage());
         } finally {
-            disconnectQueue();
+        	JMSUtils.disconnectQueue(connection);
         }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public String sendModuleMessage(String text, ModuleQueue queue) throws JMSException {
-        try {
-            connectQueue();
+    	Connection connection=null;
+    	try {
+            connection = connectionFactory.createConnection();
+            final Session session = JMSUtils.connectToQueue(connection);
             TextMessage message = session.createTextMessage();
             message.setText(text);
             switch (queue) {
@@ -76,17 +78,19 @@ public class PluginMessageProducer {
             }
             return message.getJMSMessageID();
         } catch (JMSException e) {
-            LOG.error("[ Error when sending data source message. ]", e);
+            LOG.error("[ Error when sending data source message.{} ] {}",text, e);
             throw new JMSException(e.getMessage());
         } finally {
-            disconnectQueue();
+        	JMSUtils.disconnectQueue(connection);
         }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public String sendEventBusMessage(String text, String serviceName) throws JMSException {
-        try {
-            connectQueue();
+    	Connection connection=null;
+    	try {
+            connection = connectionFactory.createConnection();
+            final Session session = JMSUtils.connectToQueue(connection);
 
             TextMessage message = session.createTextMessage();
             message.setText(text);
@@ -96,25 +100,11 @@ public class PluginMessageProducer {
 
             return message.getJMSMessageID();
         } catch (JMSException e) {
-            LOG.error("[ Error when sending message. ]", e);
+            LOG.error("[ Error when sending message. {}] {}",text, e);
             throw new JMSException(e.getMessage());
         } finally {
-            disconnectQueue();
+        	JMSUtils.disconnectQueue(connection);
         }
     }
 
-    private void connectQueue() throws JMSException {
-        connection = connectionFactory.createConnection();
-        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        connection.start();
-    }
-
-    private void disconnectQueue() {
-        try {
-            connection.stop();
-            connection.close();
-        } catch (JMSException e) {
-            LOG.error("[ Error when stopping or closing JMS queue. ]", e);
-        }
-    }
 }

@@ -30,15 +30,11 @@
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+                <groupId>javax</groupId>
+                <artifactId>javaee-api</artifactId>
+                <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
+    
         <dependency>
             <groupId>eu.europa.ec.fisheries.uvms.exchange</groupId>
             <artifactId>exchange-model</artifactId>
@@ -60,6 +56,26 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.fisheries.uvms</groupId>
+            <artifactId>uvms-commons</artifactId>
+            <version>2.0.27</version>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.geotools</groupId>
+            		<artifactId>gt-geojson</artifactId>
+            	</exclusion>
+            	<exclusion>
+            	    <groupId>com.vividsolutions</groupId>
+    				<artifactId>jts</artifactId>            	
+            	</exclusion>
+            	<exclusion>
+            		<groupId>org.jboss.resteasy</groupId>
+            		<artifactId>resteasy-multipart-provider</artifactId>
+            	</exclusion>
+            </exclusions>                                    
+        </dependency>
+        
     </dependencies>
     
     <build>
@@ -67,17 +83,7 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-ejb-plugin</artifactId>
-                <version>2.3</version>
                 <configuration>
                     <ejbVersion>3.1</ejbVersion>
                     <filterDeploymentDescriptor>true</filterDeploymentDescriptor>
