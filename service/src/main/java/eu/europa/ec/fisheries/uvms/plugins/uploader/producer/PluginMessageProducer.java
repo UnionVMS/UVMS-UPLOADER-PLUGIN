@@ -26,17 +26,17 @@ import javax.jms.*;
 @LocalBean
 public class PluginMessageProducer {
 
-    @Resource(mappedName = ExchangeModelConstants.EXCHANGE_MESSAGE_IN_QUEUE)
-    private Queue exchangeQueue;
-
-    @Resource(mappedName = ExchangeModelConstants.PLUGIN_EVENTBUS)
-    private Topic eventBus;
-
-    @Resource(lookup = ExchangeModelConstants.CONNECTION_FACTORY)
+    @Resource(lookup = "java:/ConnectionFactory")
     private ConnectionFactory connectionFactory;
 
+    @Resource(mappedName = "java:/jms/queue/UVMSExchangeEvent")
+    private Queue exchangeQueue;
+
+    @Resource(mappedName = "java:/jms/topic/EventBus")
+    private Topic eventBus;
+
     private Connection connection = null;
-    private Session session = null;
+    private Session session       = null;
 
     private static final Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
 
