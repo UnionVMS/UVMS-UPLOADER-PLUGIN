@@ -62,7 +62,7 @@ public class PluginMessageProducer {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public String sendModuleMessage(String text, ModuleQueue queue) throws JMSException {
-    	Connection connection=null;
+    	Connection connection;
     	try {
             connection = connectionFactory.createConnection();
             final Session session = JMSUtils.connectToQueue(connection);

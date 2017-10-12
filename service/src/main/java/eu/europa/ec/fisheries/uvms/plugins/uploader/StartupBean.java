@@ -31,11 +31,8 @@ public class StartupBean extends PluginDataHolder {
 
     private static final Logger LOG = LoggerFactory.getLogger(StartupBean.class);
 
-    private static final int MAX_NUMBER_OF_TRIES = 10;
-    private boolean isRegistered                 = false;
     private boolean isEnabled                    = false;
     private boolean waitingForResponse           = false;
-    private int numberOfTriesExecuted            = 0;
     private String registeredClassName           = StringUtils.EMPTY;
 
     private static final String FAILED_TO_GET_SETTING_FOR_KEY = "Failed to getSetting for key: ";
@@ -64,7 +61,7 @@ public class StartupBean extends PluginDataHolder {
         super.setPluginApplicaitonProperties(fileHandler.getPropertiesFromFile(PLUGIN_PROPERTIES_KEY));
         registeredClassName = getPLuginApplicationProperty("application.groupid");
 
-        //Theese can be loaded in any order
+        //These can be loaded in any order
         super.setPluginProperties(fileHandler.getPropertiesFromFile(PROPERTIES_KEY));
         super.setPluginCapabilities(fileHandler.getPropertiesFromFile(CAPABILITIES_PROPS_KEY));
 
@@ -78,7 +75,7 @@ public class StartupBean extends PluginDataHolder {
                 getRegisterClassName(),
                 getApplicationName(),
                 "Plugin for listeing to folder for files containing data that should be sent to the flow manually.",
-                PluginType.SATELLITE_RECEIVER,
+                PluginType.MANUAL,
                 getPluginResponseSubscriptionName());
 
         register();
@@ -99,14 +96,6 @@ public class StartupBean extends PluginDataHolder {
         unregister();
     }
 
-    @Schedule(second = "*/30", minute = "*", hour = "*", persistent = false)
-    public void timeout() {
-        if (!waitingForResponse && !isRegistered && numberOfTriesExecuted < MAX_NUMBER_OF_TRIES) {
-            LOG.info(getRegisterClassName() + " is not registered, trying to register");
-            register();
-            numberOfTriesExecuted++;
-        }
-    }
 
     private void register() {
         LOG.info("Registering to Exchange Module");
@@ -125,7 +114,7 @@ public class StartupBean extends PluginDataHolder {
         LOG.info("Unregistering from Exchange Module");
         try {
             String unregisterServiceRequest = ExchangeModuleRequestMapper.createUnregisterServiceRequest(serviceType);
-             messageProducer.sendEventBusMessage(unregisterServiceRequest, ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE);
+            messageProducer.sendEventBusMessage(unregisterServiceRequest, ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE);
         } catch (JMSException | ExchangeModelMarshallException e) {
             LOG.error(FAILED_TO_SEND_UNREGISTRATION_MESSAGE_TO, ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE,e);
         }
@@ -171,12 +160,6 @@ public class StartupBean extends PluginDataHolder {
     }
     public void setWaitingForResponse(boolean waitingForResponse) {
         this.waitingForResponse = waitingForResponse;
-    }
-    public boolean isIsRegistered() {
-        return isRegistered;
-    }
-    public void setIsRegistered(boolean isRegistered) {
-        this.isRegistered = isRegistered;
     }
     public boolean isIsEnabled() {
         return isEnabled;

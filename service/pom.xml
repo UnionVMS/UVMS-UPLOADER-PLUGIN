@@ -34,7 +34,7 @@
                 <artifactId>javaee-api</artifactId>
                 <scope>provided</scope>
         </dependency>
-    
+
         <dependency>
             <groupId>eu.europa.ec.fisheries.uvms.exchange</groupId>
             <artifactId>exchange-model</artifactId>
@@ -67,15 +67,15 @@
             	</exclusion>
             	<exclusion>
             	    <groupId>com.vividsolutions</groupId>
-    				<artifactId>jts</artifactId>            	
+    				<artifactId>jts</artifactId>
             	</exclusion>
             	<exclusion>
             		<groupId>org.jboss.resteasy</groupId>
             		<artifactId>resteasy-multipart-provider</artifactId>
             	</exclusion>
-            </exclusions>                                    
+            </exclusions>
         </dependency>
-        
+
     </dependencies>
     
     <build>
