@@ -13,45 +13,67 @@ package eu.europa.ec.fisheries.uvms.plugins.uploader.producer;
 import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
 import eu.europa.ec.fisheries.uvms.message.JMSUtils;
 import eu.europa.ec.fisheries.uvms.plugins.uploader.constants.ModuleQueue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Resource;
+import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Stateless
 @LocalBean
 public class PluginMessageProducer {
 
-    @Resource(mappedName = ExchangeModelConstants.EXCHANGE_MESSAGE_IN_QUEUE)
     private Queue exchangeQueue;
-
-    @Resource(mappedName = ExchangeModelConstants.PLUGIN_EVENTBUS)
     private Topic eventBus;
-
-    @Resource(lookup = ExchangeModelConstants.CONNECTION_FACTORY)
     private ConnectionFactory connectionFactory;
+    private Connection connection = null;
 
     private static final Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
+
+
+    @PostConstruct
+    public void resourceLookup() {
+        LOG.debug("Open connection to JMS broker");
+        InitialContext ctx;
+        try {
+            ctx = new InitialContext();
+        } catch (Exception e) {
+            LOG.error("Failed to get InitialContext",e);
+            throw new RuntimeException(e);
+        }
+        connectionFactory = JMSUtils.lookupConnectionFactory();
+        try {
+            connection = connectionFactory.createConnection();
+            connection.start();
+        } catch (JMSException ex) {
+            LOG.error("Error when open connection to JMS broker");
+        }
+        exchangeQueue = JMSUtils.lookupQueue(ctx, ExchangeModelConstants.EXCHANGE_MESSAGE_IN_QUEUE);
+        eventBus = JMSUtils.lookupTopic(ctx, ExchangeModelConstants.PLUGIN_EVENTBUS);
+    }
+
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void sendResponseMessage(String text, TextMessage requestMessage) throws JMSException {
     	Connection connection=null;
     	try {
             connection = connectionFactory.createConnection();
-            final Session session = JMSUtils.connectToQueue(connection);
-
+            Session session = JMSUtils.connectToQueue(connection);
             TextMessage message = session.createTextMessage();
             message.setJMSDestination(requestMessage.getJMSReplyTo());
             message.setJMSCorrelationID(requestMessage.getJMSMessageID());
             message.setText(text);
-
             session.createProducer(requestMessage.getJMSReplyTo()).send(message);
-
         } catch (JMSException e) {
             LOG.error("[ Error when sending jms message. {}] {}",text, e);
             throw new JMSException(e.getMessage());
@@ -62,7 +84,7 @@ public class PluginMessageProducer {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public String sendModuleMessage(String text, ModuleQueue queue) throws JMSException {
-    	Connection connection;
+    	Connection connection = null;
     	try {
             connection = connectionFactory.createConnection();
             final Session session = JMSUtils.connectToQueue(connection);
@@ -87,17 +109,14 @@ public class PluginMessageProducer {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public String sendEventBusMessage(String text, String serviceName) throws JMSException {
-    	Connection connection=null;
+    	Connection connection = null;
     	try {
             connection = connectionFactory.createConnection();
             final Session session = JMSUtils.connectToQueue(connection);
-
             TextMessage message = session.createTextMessage();
             message.setText(text);
             message.setStringProperty(ExchangeModelConstants.SERVICE_NAME, serviceName);
-
             session.createProducer(eventBus).send(message);
-
             return message.getJMSMessageID();
         } catch (JMSException e) {
             LOG.error("[ Error when sending message. {}] {}",text, e);
